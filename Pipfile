@@ -6,7 +6,9 @@ name = "pypi"
 [packages]
 requests = "*"
 beautifulsoup4 = "*"
+lxml = "*"
 
 [dev-packages]
 
 [requires]
+
