@@ -1,17 +1,16 @@
 import csv
 import re
 import time
-from pprint import pprint
-import pandas as pd
+from pathlib import Path
+
 import requests
 from bs4 import BeautifulSoup
 
 from url import url_books
 
-
 start = time.time()
 
-for i in range( len(url_books) ):
+for i in range( len( url_books ) ):  # len(url_books)
 
     def extract(url_books):
         # print(url)
@@ -64,11 +63,14 @@ for i in range( len(url_books) ):
 
         value.append( "http://books.toscrape.com/" + data_image_url )
 
-        return value, header
+        return header, value, data_cat
 
 
-    def loading(line_1, header):
-        with open( "all_books.csv", "a",newline="", encoding="utf-8" ) as csv_file:
+    def loading(header, line_1):  # header, line_1
+        # file_path = Path(Path.cwd() / line_1[7]+".csv")
+        # file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open( line_1[7] + ".csv", "a", newline="", encoding="utf-8" ) as csv_file:
             writer = csv.writer( csv_file, delimiter="," )
             if i == 0:
                 writer.writerow( header )
@@ -76,20 +78,43 @@ for i in range( len(url_books) ):
                 pass
             writer.writerow( line_1 )
 
-            df = pd.Series( line_1 )
-
-            # print( df )
-
 
     soup = extract( url_books[i] )
-    header, line_1, = transform( soup, url_books[i] )
-    # loading( header, line_1 )
+    header, line_1, dat_cat = transform( soup, url_books[i] )
+    loading( header, line_1 )  # header, line_1
 
+try:
+    BASE_DIR = Path.cwd()
+    filepath = Path( BASE_DIR / "DATA" )
+    filepath.mkdir( exist_ok=True )
+
+    files = [f for f in BASE_DIR.iterdir() if f.is_file() and f.suffix == ".csv"]
+
+    for file in files:
+        starget_file = file.stem
+
+        absolut_starget_folder = filepath / starget_file
+        absolut_starget_folder.mkdir( exist_ok=True )
+        file_cible = absolut_starget_folder / file.name
+        print( file_cible )
+
+        file.rename( file_cible )
+
+except FileExistsError:
+    print( "Files already exist" )
+
+    # BASE_DIR  = Path.cwd()
+    # files = [f for f in BASE_DIR.iterdir() if f.is_file()]
+    # print(files)
+    # for file in files:
+    #     absolute_target_folder = BASE_DIR / line_1[2]
+    #     absolute_target_folder.mkdir(exist_ok=True)
+    #     file_cible = absolute_target_folder / line_1[7]+".csv"
+    #     file.rename(file_cible)
+
+    # df = pd.read_csv("all_books.csv")
 
 end = time.time()
 elapsed = end - start
-print(f"temps d'execution = : {elapsed}ms")
 
-
-
-
+print( f"temps d'execution = : {elapsed}ms")
