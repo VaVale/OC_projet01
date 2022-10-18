@@ -72,9 +72,4 @@ all_url_without_books_clean = get_url_page( url_index )
 
 url_books = get_url_book( all_url_without_books_clean )
 
-# print(url_books)
 
-
-# with open( 'urls.txt', 'w' ) as f:
-#     for link in url_books:
-#         f.write( link + '\n' )

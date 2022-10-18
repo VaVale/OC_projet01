@@ -1,7 +1,6 @@
 import csv
 import re
 import string
-import time
 import urllib.request
 from pathlib import Path
 
@@ -11,16 +10,13 @@ from bs4 import BeautifulSoup
 
 from url import url_books
 
-start = time.time()
-
-for i in range( len( url_books ) ):  # len(url_books)
+for i in range(len(url_books)):  # len(url_books)
 
     def extract(url_books):
-        # print(url)
+
         r = requests.get( url_books )
         if r.status_code != 200:
             print( "problème d'url" )
-        # print(r.status_code)
 
         soup = BeautifulSoup( r.content, 'html.parser' )
 
@@ -70,8 +66,6 @@ for i in range( len( url_books ) ):  # len(url_books)
 
 
     def loading(header, line_1):  # header, line_1
-        # file_path = Path(Path.cwd() / line_1[7]+".csv")
-        # file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open( line_1[7] + ".csv", "a", newline="", encoding="utf-8" ) as csv_file:
             writer = csv.writer( csv_file, delimiter="," )
@@ -115,10 +109,13 @@ for i in range( len( url_books ) ):  # len(url_books)
         except FileNotFoundError:
             print( "path no found" )
             pass
+
+
     soup = extract( url_books[i] )
     header, line_1, dat_cat = transform( soup, url_books[i] )
     loading( header, line_1 )  # header, line_1
     get_pictures( line_1 )
+
 
 try:
     BASE_DIR = Path.cwd()
