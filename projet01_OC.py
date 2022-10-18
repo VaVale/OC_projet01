@@ -1,9 +1,12 @@
 import csv
 import re
+import string
 import time
+import urllib.request
 from pathlib import Path
 
 import requests
+from PIL import Image
 from bs4 import BeautifulSoup
 
 from url import url_books
@@ -79,9 +82,43 @@ for i in range( len( url_books ) ):  # len(url_books)
             writer.writerow( line_1 )
 
 
+    def get_pictures(line_1):
+
+        link = line_1[9].replace( "../../", "" )
+        print( link )
+        title = line_1[2]
+        title = "".join( [i.rstrip() for i in title if i not in string.punctuation] )
+        print( title )
+        cat = line_1[7]
+        print( cat )
+        list_zip = (title, cat)
+        print( list_zip )
+        urllib.request.urlretrieve( link, title )
+        img = Image.open( title )
+        img = img.save( title + ".png" )
+
+        try:
+            BASE_DIR = Path.cwd()
+
+            files = [f for f in BASE_DIR.iterdir() if f.is_file() and f.suffix == ".png"]
+
+            for f in files:
+                output_dir = BASE_DIR / "DATA" / cat / title
+                output_dir.mkdir( exist_ok=True, parents=True )
+
+                f.rename( output_dir / f.name )
+
+            a = [f.unlink() for f in BASE_DIR.iterdir() if f.is_file() and f.suffix == ""]
+        except FileExistsError:
+            print( "Files already created" )
+            pass
+        except FileNotFoundError:
+            print( "path no found" )
+            pass
     soup = extract( url_books[i] )
     header, line_1, dat_cat = transform( soup, url_books[i] )
     loading( header, line_1 )  # header, line_1
+    get_pictures( line_1 )
 
 try:
     BASE_DIR = Path.cwd()
@@ -92,29 +129,15 @@ try:
 
     for file in files:
         starget_file = file.stem
-
+        print( type( file.stem ) )
+        print( file.stem )
         absolut_starget_folder = filepath / starget_file
         absolut_starget_folder.mkdir( exist_ok=True )
         file_cible = absolut_starget_folder / file.name
-        print( file_cible )
+        # print( file_cible )
 
         file.rename( file_cible )
 
 except FileExistsError:
-    print( "Files already exist" )
-
-    # BASE_DIR  = Path.cwd()
-    # files = [f for f in BASE_DIR.iterdir() if f.is_file()]
-    # print(files)
-    # for file in files:
-    #     absolute_target_folder = BASE_DIR / line_1[2]
-    #     absolute_target_folder.mkdir(exist_ok=True)
-    #     file_cible = absolute_target_folder / line_1[7]+".csv"
-    #     file.rename(file_cible)
-
-    # df = pd.read_csv("all_books.csv")
-
-end = time.time()
-elapsed = end - start
-
-print( f"temps d'execution = : {elapsed}ms")
+    print( "Files already created" )
+    pass

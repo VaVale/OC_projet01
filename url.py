@@ -74,17 +74,7 @@ url_books = get_url_book( all_url_without_books_clean )
 
 # print(url_books)
 
-# a = []
-# for url in url_books:
-#     u = url.split("/")
-#     a.append(u)   NE MARCHE PAS A FAIRE RECUPERER CATEGORIE
-#     print(a[0][3])
 
-
-with open( 'urls.txt', 'w' ) as f:
-    for link in url_books:
-        f.write( link + '\n' )
-
-# with open('urls.txt', 'r', encoding="utf-8") as f:
-#     for row in f:
-#         print(row)
+# with open( 'urls.txt', 'w' ) as f:
+#     for link in url_books:
+#         f.write( link + '\n' )
