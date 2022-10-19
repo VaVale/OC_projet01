@@ -10,10 +10,18 @@ from bs4 import BeautifulSoup
 
 from url import url_books
 
-for i in range(len(url_books)):  # len(url_books)
+for url in range( 5 ):  # len(url_books)
 
     def extract(url_books):
+        """scrape the page web of books
 
+        Args:
+            url_books(str):
+
+        Returns:
+            scraped web page
+
+        """
         r = requests.get( url_books )
         if r.status_code != 200:
             print( "problème d'url" )
@@ -22,9 +30,18 @@ for i in range(len(url_books)):  # len(url_books)
 
         return soup
 
-
     def transform(soup, url):
+        """get datas for books (product_page_url", "universal_product_code (upc)", "title", "price_including_tax",
+                  "price_excluding_tax", "number_available", "product_description", "category", "review_rating",
+                  "image_url)
+        Args:
+            soup(soup):scraped web page
+            url(str):url of a book
 
+        Returns:
+            all datas for books
+
+        """
         value = [url]
         header = ["product_page_url", "universal_product_code (upc)", "title", "price_including_tax",
                   "price_excluding_tax", "number_available", "product_description", "category", "review_rating",
@@ -62,14 +79,24 @@ for i in range(len(url_books)):  # len(url_books)
 
         value.append( "http://books.toscrape.com/" + data_image_url )
 
-        return header, value, data_cat
+        return header, value
 
 
     def loading(header, line_1):  # header, line_1
+        """write on the csv file
+
+        Args:
+            header(list(str)):table header
+            line_1:data from books
+
+        Returns:
+            csv files with datas from books
+
+        """
 
         with open( line_1[7] + ".csv", "a", newline="", encoding="utf-8" ) as csv_file:
             writer = csv.writer( csv_file, delimiter="," )
-            if i == 0:
+            if url == 0:
                 writer.writerow( header )
             else:
                 pass
@@ -77,6 +104,12 @@ for i in range(len(url_books)):  # len(url_books)
 
 
     def get_pictures(line_1):
+        """dowload book pictures and creating of data folder, categorie folder and book folder
+
+        Args:
+            line_1(list(str)): data from books
+
+        """
 
         link = line_1[9].replace( "../../", "" )
         print( link )
@@ -111,12 +144,12 @@ for i in range(len(url_books)):  # len(url_books)
             pass
 
 
-    soup = extract( url_books[i] )
-    header, line_1, dat_cat = transform( soup, url_books[i] )
+    soup = extract( url_books[url] )
+    header, line_1 = transform( soup, url_books[url] )
     loading( header, line_1 )  # header, line_1
     get_pictures( line_1 )
 
-
+# creates a folder for the .csv files and stores them in it
 try:
     BASE_DIR = Path.cwd()
     filepath = Path( BASE_DIR / "DATA" )
