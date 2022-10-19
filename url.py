@@ -24,7 +24,7 @@ def get_url_index():
     soup = bs4.BeautifulSoup( r.content, 'html.parser' )
     # print(r.status_code)
     links = [str( link.get( 'href' ) ) for link in soup.find_all( 'a' )]
-    links = links[3:15]  # 53
+    links = links[3:53]  # 53
     url_index = [link.replace( "../", "http://books.toscrape.com/catalogue/category/" ) for link in links]
     logging.info(f"Generating index url : {url_index}, url number = {len(url_index)}")
     return url_index
@@ -42,7 +42,7 @@ def get_url_page(url_index):  # (no books)
     """
 
     all_url_without_books = []
-    for i in range( 3 ):  # 50
+    for i in range( 50 ):  # 50
         a = re.match( r".+(_\d|\d([/index.html]))", url_index[i] )
         if a != None:
             all_url_without_books.append( url_index[i] )

@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 from url import url_books
 
-for url in range( 5 ):  # len(url_books)
+for url in range( len(url_books) ):  # len(url_books)
 
     def extract(url_books):
         """scrape the page web of books
