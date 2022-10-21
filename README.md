@@ -9,9 +9,25 @@ in the folder DATA. This file is in the  project's root folder with  the books p
  
 
 ## Installation
-
+### Creating Virtual Environments
+```bash
+python3 -m venv books-to-scrape-env
+```
+#### On Windows, 
+run:
+```bash
+tutorial-env\Scripts\activate.bat
+```
+#### On Unix or MacOS, run:
+```bash
+source tutorial-env/bin/activate
+```
+#### for libraries : 
+```bash
+python -m pip install -r requirements.txt
+```
  - execute scripts with IDE
- - upload Python and libraries (see file requirement.txt)
+ - upload Python and libraries (see file `requirement.txt`)
  - provide 300 mo for the data file
 
 ## Usage
