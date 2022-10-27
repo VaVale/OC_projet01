@@ -1,88 +1,154 @@
 import csv
+import logging
+import os
 import re
-import time
+import string
+import urllib.request
 from pathlib import Path
 
 import requests
+from PIL import Image
 from bs4 import BeautifulSoup
 
 from url import url_books
 
-start = time.time()
+BASE_DIR = Path( __file__ ).resolve().parent
+logging.basicConfig( filename=BASE_DIR / 'projet01_OC.log', level=logging.INFO )
 
-for i in range( len( url_books ) ):  # len(url_books)
+for url in range( len( url_books ) ):  # len(books)
 
-    def extract(url_books):
-        # print(url)
-        r = requests.get( url_books )
+    def extract(books):
+        """scrape the page web of books
+
+        Args:
+            books(str):
+
+        Returns:
+            scraped web page
+
+        """
+        r = requests.get( books )
         if r.status_code != 200:
-            print( "problème d'url" )
-        # print(r.status_code)
+            logging.debug( f"PROBLEME URL : {r.status_code}" )
+        beauti = BeautifulSoup( r.content, 'html.parser' )
 
-        soup = BeautifulSoup( r.content, 'html.parser' )
-
-        return soup
+        return beauti
 
 
-    def transform(soup, url):
+    def transform(s, u):
+        """get datas for books
+        Args:
+            s(soup):scraped web page
+            u(str):u of a book
 
-        value = [url]
-        header = ["product_page_url", "universal_product_code (upc)", "title", "price_including_tax",
-                  "price_excluding_tax", "number_available", "product_description", "category", "review_rating",
-                  "image_url"]
+        Returns:
+            all datas for books
 
-        h1 = soup.find( "h1" ).text
-        data_value = soup.find_all( 'td' )
-        for i in range( 6 ):
-            value.append( data_value[i].text )
-            if i == 0:
-                value.append( h1 )
-            else:
-                pass
-        if "Books" or "£0.00" in value:
-            value.remove( "Books" )
-            value.remove( "£0.00" )
+        """
+        csv_header = ("product page u", "universal product code (upc)", "title",
+                      "price excluding tax", "price including tax", "number available",
+                      "product description", "category", "review rating", "image u")
+        value = [u]
 
-        data_description = soup.find_all( 'p' )
+        h1 = s.find( "h1" ).text
+        h1 = "".join( [i for i in h1 if i not in string.punctuation] )
+        data_value = s.find_all( 'td' )
+        upc = data_value[0].text
+        value.append( upc )
+        value.append( h1 )
+        price_exclu_tax = data_value[2].text
+        price_inclu_tax = data_value[3].text
+        value.append( price_exclu_tax )
+        value.append( price_inclu_tax )
+        stock = data_value[5].text
+        stock = [i for i in stock if i.isdigit()]
+        stock = "".join( stock )
+        value.append( stock )
+        data_description = s.find_all( 'p' )
+
         data_description = data_description[3].text
         value.append( data_description )
 
-        data_cat = soup.find_all( 'a' )
+        data_cat = s.find_all( 'a' )
         data_cat = data_cat[3]
         data_cat = data_cat.string
-
+        logging.info( f"data_cat : {data_cat}" )
         value.append( data_cat )
 
-        a = soup.find( 'p', {'class': re.compile( r'star-rating.*' )} )
-        a = a["class"]
+        rating = s.find( 'p', {'class': re.compile( r'star-rating.*' )} )
+        rating = rating["class"]
 
-        value.append( a[1] )
+        value.append( rating[1] )
 
-        data_image_url = soup.find_all( 'img' )
+        data_image_url = s.find_all( 'img' )
         data_image_url = data_image_url[0].get( "src" )
 
         value.append( "http://books.toscrape.com/" + data_image_url )
 
-        return header, value, data_cat
+        return csv_header, value
 
 
-    def loading(header, line_1):  # header, line_1
-        # file_path = Path(Path.cwd() / line_1[7]+".csv")
-        # file_path.parent.mkdir(parents=True, exist_ok=True)
+    def loading(a, b):  # a, data_book
+        """write on the csv file
 
-        with open( line_1[7] + ".csv", "a", newline="", encoding="utf-8" ) as csv_file:
+        Args:
+            a(list(str)):table header
+            b:data from books
+
+        Returns:
+            csv files with datas from books
+
+        """
+
+        with open( b[7] + ".csv", "a", newline="", encoding="utf-8" ) as csv_file:
             writer = csv.writer( csv_file, delimiter="," )
-            if i == 0:
-                writer.writerow( header )
-            else:
-                pass
-            writer.writerow( line_1 )
+            file_is_empty = os.stat( b[7] + ".csv" ).st_size == 0
+            if file_is_empty:
+                writer.writerow( a )
+            writer.writerow( b )
 
 
-    soup = extract( url_books[i] )
-    header, line_1, dat_cat = transform( soup, url_books[i] )
-    loading( header, line_1 )  # header, line_1
+    # noinspection PyShadowingNames
+    def get_pictures(data_book):
+        """dowload book pictures and creating of data folder, categorie folder and book folder
 
+        Args:
+            data_book(list(str)): data from books
+
+        """
+        link = data_book[9].replace( "../../", "" )
+        title = data_book[2]
+        title = "".join( [i for i in title] )
+        cat = data_book[7]
+        urllib.request.urlretrieve( link, title )
+        img = Image.open( title )
+        img.save( title + ".png" )
+
+        try:
+            base_dir = Path.cwd()
+
+            files_png = [f for f in base_dir.iterdir() if f.is_file() and f.suffix == ".png"]
+
+            for f in files_png:
+                output_dir = base_dir / "DATA" / cat / title
+                output_dir.mkdir( exist_ok=True, parents=True )
+
+                f.rename( output_dir / f.name )
+
+            [f.unlink() for f in base_dir.iterdir() if f.is_file() and f.suffix == ""]
+        except FileExistsError:
+            logging.info( "Files already created" )
+
+        except FileNotFoundError:
+            logging.info( "path no found" )
+
+
+    soup = extract( url_books[url] )
+    header, line_1 = transform( soup, url_books[url] )
+    loading( header, line_1 )  # a, data_book
+    get_pictures( line_1 )
+
+# creates a folder for the .csv files and stores them in it
 try:
     BASE_DIR = Path.cwd()
     filepath = Path( BASE_DIR / "DATA" )
@@ -93,28 +159,12 @@ try:
     for file in files:
         starget_file = file.stem
 
+        logging.info( f"Files name:{file.stem}" )
         absolut_starget_folder = filepath / starget_file
         absolut_starget_folder.mkdir( exist_ok=True )
         file_cible = absolut_starget_folder / file.name
-        print( file_cible )
 
         file.rename( file_cible )
 
 except FileExistsError:
-    print( "Files already exist" )
-
-    # BASE_DIR  = Path.cwd()
-    # files = [f for f in BASE_DIR.iterdir() if f.is_file()]
-    # print(files)
-    # for file in files:
-    #     absolute_target_folder = BASE_DIR / line_1[2]
-    #     absolute_target_folder.mkdir(exist_ok=True)
-    #     file_cible = absolute_target_folder / line_1[7]+".csv"
-    #     file.rename(file_cible)
-
-    # df = pd.read_csv("all_books.csv")
-
-end = time.time()
-elapsed = end - start
-
-print( f"temps d'execution = : {elapsed}ms")
+    logging.debug( "Files already created" )
