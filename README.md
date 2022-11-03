@@ -9,6 +9,7 @@ in the folder DATA. This file is in the  project's root folder with  the books p
  
 
 ## Installation
+https://www.python.org/downloads/release/python-3105/
 ### Creating Virtual Environments
 ```bash
 python3 -m venv books-to-scrape-env
