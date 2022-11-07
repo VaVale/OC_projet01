@@ -15,8 +15,8 @@ from url import url_books
 BASE_DIR = Path( __file__ ).resolve().parent
 logging.basicConfig( filename=BASE_DIR / 'projet01_OC.log', level=logging.INFO )
 
-for url in range( len( url_books ) ):  # len(books)
-
+for url in range( len(url_books) ):  # len(url_books)
+    print(len( url_books ))
     def extract(books):
         """scrape the page web of books
 
@@ -67,7 +67,7 @@ for url in range( len( url_books ) ):  # len(books)
         data_description = s.find_all( 'p' )
 
         data_description = data_description[3].text
-        value.append( data_description )
+        value.append(data_description)
 
         data_cat = s.find_all( 'a' )
         data_cat = data_cat[3]
@@ -83,7 +83,7 @@ for url in range( len( url_books ) ):  # len(books)
         data_image_url = s.find_all( 'img' )
         data_image_url = data_image_url[0].get( "src" )
 
-        value.append( "http://books.toscrape.com/" + data_image_url )
+        value.append(f"http://books.toscrape.com/{data_image_url}")
 
         return csv_header, value
 
@@ -102,7 +102,7 @@ for url in range( len( url_books ) ):  # len(books)
 
         with open( b[7] + ".csv", "a", newline="", encoding="utf-8" ) as csv_file:
             writer = csv.writer( csv_file, delimiter="," )
-            file_is_empty = os.stat( b[7] + ".csv" ).st_size == 0
+            file_is_empty = os.stat(f"{b[7]}.csv" ).st_size == 0
             if file_is_empty:
                 writer.writerow( a )
             writer.writerow( b )
@@ -122,7 +122,7 @@ for url in range( len( url_books ) ):  # len(books)
         cat = data_book[7]
         urllib.request.urlretrieve( link, title )
         img = Image.open( title )
-        img.save( title + ".png" )
+        img.save( f"{title}.png" )
 
         try:
             base_dir = Path.cwd()
@@ -143,16 +143,16 @@ for url in range( len( url_books ) ):  # len(books)
             logging.info( "path no found" )
 
 
-    soup = extract( url_books[url] )
-    header, line_1 = transform( soup, url_books[url] )
-    loading( header, line_1 )  # a, data_book
-    get_pictures( line_1 )
+    soup = extract(url_books[url])
+    header, line_1 = transform(soup, url_books[url])
+    loading(header, line_1)  # a, data_book
+    get_pictures(line_1)
 
 # creates a folder for the .csv files and stores them in it
 try:
     BASE_DIR = Path.cwd()
     filepath = Path( BASE_DIR / "DATA" )
-    filepath.mkdir( exist_ok=True )
+    filepath.mkdir(exist_ok=True)
 
     files = [f for f in BASE_DIR.iterdir() if f.is_file() and f.suffix == ".csv"]
 

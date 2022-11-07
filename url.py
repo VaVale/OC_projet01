@@ -18,6 +18,7 @@ def get_url_index():
     """
 
     r = requests.get( "http://books.toscrape.com/catalogue/category/books_1/index.html" )
+
     soup = bs4.BeautifulSoup( r.content, 'html.parser' )
     links = [str( link.get( 'href' ) ) for link in soup.find_all( 'a' )]
     links = links[3:53]  # 53
@@ -83,7 +84,8 @@ def get_url_book(all_url_wthout_books_clean):
 
         for i in links:
             a = i.replace( "../../../", "http://books.toscrape.com/catalogue/" )
-            books.append( a )
+            if a not in books:
+                books.append( a )
     logging.info( f"Generating good u : {books}, {len( books )} " )
     return books
 
