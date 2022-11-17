@@ -51,7 +51,7 @@ for url in range(len(url_books)):  # len(url_books)
 
         """
         csv_header = ("product page url", "Universal Product Code (U.P.C)", "title",
-                      "price excluding tax", "price including tax", "number available",
+                      "price excluding tax (£)", "price including tax (£)", "number available",
                       "product description", "category", "review rating", "image url")
         value = [u]
 
@@ -61,8 +61,8 @@ for url in range(len(url_books)):  # len(url_books)
         upc = data_value[0].text
         value.append(upc)
         value.append(h1)
-        price_exclu_tax = data_value[2].text
-        price_inclu_tax = data_value[3].text
+        price_exclu_tax = data_value[2].text.replace('£', '').replace(".", ",")
+        price_inclu_tax = data_value[3].text.replace('£', '').replace(".", ",")
         value.append(price_exclu_tax)
         value.append(price_inclu_tax)
         stock = data_value[5].text
@@ -127,9 +127,9 @@ for url in range(len(url_books)):  # len(url_books)
         title = data_book[2]
         title = "".join([i for i in title])
         cat = data_book[7]
-        urllib.request.urlretrieve( link, title )
-        img = Image.open( title )
-        img.save( f"{title}.png" )
+        urllib.request.urlretrieve(link, title)
+        img = Image.open(title)
+        img.save(f"{title}.png")
 
         try:
             base_dir = Path.cwd()
@@ -154,4 +154,3 @@ for url in range(len(url_books)):  # len(url_books)
     header, line_1 = transform(soup, url_books[url])
     loading(header, line_1)
     download_pictures(line_1)
-
